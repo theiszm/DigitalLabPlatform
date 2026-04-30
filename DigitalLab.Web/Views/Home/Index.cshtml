@@ -1,8 +1,28 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model List<DigitalLab.Web.Models.Reading>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Digital Lab Dashboard</h2>
+
+<canvas id="chart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const data = @Html.Raw(Json.Serialize(Model));
+
+    const labels = data.map(x => new Date(x.timestamp).toLocaleTimeString());
+    const values = data.map(x => x.value);
+
+    new Chart(document.getElementById('chart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Instrument Data',
+                data: values
+            }]
+        }
+    });
+
+    setTimeout(() => location.reload(), 5000);
+
+</script>

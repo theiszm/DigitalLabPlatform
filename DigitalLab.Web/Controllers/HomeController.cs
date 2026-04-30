@@ -1,14 +1,28 @@
 using DigitalLab.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using DigitalLab.Web.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DigitalLab.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _context;
+
+        public HomeController(AppDbContext context)
         {
-            return View();
+            _context = context;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var readings = await _context.Readings
+                .OrderBy(r => r.Timestamp)
+                .Take(50)
+                .ToListAsync();
+
+            return View(readings);
         }
 
         public IActionResult Privacy()
