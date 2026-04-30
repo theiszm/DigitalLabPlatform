@@ -1,8 +1,34 @@
 ﻿@model List<DigitalLab.Web.Models.Reading>
 
-<h2>Digital Lab Dashboard</h2>
+<div class="container mt-4">
 
-<canvas id="chart"></canvas>
+    <h2 class="mb-4">Digital Lab Dashboard</h2>
+
+    <div class="row">
+        
+        <!-- Chart -->
+        <div class="col-md-8">
+            <div class="card p-3 shadow-sm">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm mb-3">
+                <h5>Latest Value</h5>
+                <p id="latest"></p>
+            </div>
+
+            <div class="card p-3 shadow-sm">
+                <h5>Total Readings</h5>
+                <p>@Model.Count</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -11,6 +37,10 @@
 
     const labels = data.map(x => new Date(x.timestamp).toLocaleTimeString());
     const values = data.map(x => x.value);
+
+    // Latest value
+    document.getElementById("latest").innerText =
+    values.length ? values[values.length - 1].toFixed(2) : "No data";
 
     new Chart(document.getElementById('chart'), {
         type: 'line',
@@ -23,6 +53,7 @@
         }
     });
 
+    // auto refresh
     setTimeout(() => location.reload(), 5000);
 
 </script>
