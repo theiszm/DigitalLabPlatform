@@ -1,7 +1,16 @@
+using DigitalLab.Web.Data;
+using Microsoft.EntityFrameworkCore;
+using DigitalLab.Web.Models;
+using DigitalLab.Web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddHostedService<InstrumentSimulator>();
 
 var app = builder.Build();
 
@@ -13,17 +22,34 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    db.Database.EnsureCreated();
+
+    if (!db.Instruments.Any())
+    {
+        db.Instruments.Add(new Instrument
+        {
+            Name = "Main Meter"
+        });
+
+        db.SaveChanges();
+    }
+}
+
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.MapControllers();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-
+app.MapGet("/test", () => "working");
 app.Run();
