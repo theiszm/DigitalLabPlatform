@@ -1,39 +1,28 @@
-using DigitalLab.Web.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using DigitalLab.Web.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
-namespace DigitalLab.Web.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly AppDbContext _context;
+
+    public HomeController(AppDbContext context)
     {
-        private readonly AppDbContext _context;
+        _context = context;
+    }
 
-        public HomeController(AppDbContext context)
-        {
-            _context = context;
-        }
+    public async Task<IActionResult> Index(int instrumentId = 1)
+    {
+        var readings = await _context.Readings
+            .Include(r => r.Instrument)
+            .Where(r => r.InstrumentId == instrumentId)
+            .OrderBy(r => r.Timestamp)
+            .Take(50)
+            .ToListAsync();
 
-        public async Task<IActionResult> Index()
-        {
-            var readings = await _context.Readings
-                .OrderBy(r => r.Timestamp)
-                .Take(50)
-                .ToListAsync();
+        ViewBag.Instruments = _context.Instruments.ToList();
+        ViewBag.SelectedInstrumentId = instrumentId;
 
-            return View(readings);
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        return View(readings);
     }
 }

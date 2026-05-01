@@ -7,6 +7,18 @@
     <div class="row">
 
         <div class="mb-3">
+            <label><strong>Select Instrument:</strong></label>
+            <select id="instrumentSelect" class="form-select">
+                @foreach (var inst in ViewBag.Instruments)
+                {
+                    <option value="@inst.Id" selected="@(inst.Id == ViewBag.SelectedInstrumentId)">
+                        @inst.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
             <strong>Instrument:</strong>
             @(Model.FirstOrDefault()?.Instrument?.Name ?? "N/A")
         </div>
@@ -42,6 +54,11 @@
 
     const labels = data.map(x => new Date(x.timestamp).toLocaleTimeString());
     const values = data.map(x => x.value);
+
+    document.getElementById("instrumentSelect").addEventListener("change", function () {
+    const selectedId = this.value;
+    window.location.href = "/?instrumentId=" + selectedId;
+    });
 
     // Latest value
     document.getElementById("latest").innerText =

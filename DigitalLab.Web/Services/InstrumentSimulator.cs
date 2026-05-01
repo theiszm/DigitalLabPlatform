@@ -20,9 +20,14 @@ namespace DigitalLab.Web.Services
                 using var scope = _scopeFactory.CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+                var instruments = db.Instruments.Select(i => i.Id).ToList();
+
+                if (!instruments.Any())
+                    continue;
+
                 var reading = new Reading
                 {
-                    InstrumentId = 1,
+                    InstrumentId = instruments[_random.Next(instruments.Count)],
                     Value = _random.NextDouble() * 100,
                     Unit = "kWh",
                     Timestamp = DateTime.UtcNow

@@ -30,10 +30,11 @@ using (var scope = app.Services.CreateScope())
 
     if (!db.Instruments.Any())
     {
-        db.Instruments.Add(new Instrument
-        {
-            Name = "Main Meter"
-        });
+        db.Instruments.AddRange(
+            new Instrument { Name = "Main Meter" },
+            new Instrument { Name = "Backup Meter" },
+            new Instrument { Name = "Test Sensor" }
+        );
 
         db.SaveChanges();
     }
