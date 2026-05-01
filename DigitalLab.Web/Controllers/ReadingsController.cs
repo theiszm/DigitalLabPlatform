@@ -1,5 +1,6 @@
 ﻿using DigitalLab.Web.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DigitalLab.Web.Controllers
 {
@@ -18,6 +19,7 @@ namespace DigitalLab.Web.Controllers
         public IActionResult Get(int instrumentId)
         {
             var data = _context.Readings
+                .Include(r => r.Instrument)
                 .Where(r => r.InstrumentId == instrumentId)
                 .OrderBy(r => r.Timestamp)
                 .ToList();
