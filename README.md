@@ -6,7 +6,7 @@ A web-based simulation of a laboratory data system.
 - Instrument simulation (background service)
 - Data ingestion API
 - SQLite database
-- Basic dashboard (in progress)
+- Basic dashboard
 
 ## Tech Stack
 - C# / .NET
