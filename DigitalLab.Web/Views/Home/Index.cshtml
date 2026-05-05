@@ -39,7 +39,7 @@
 
             <div class="card p-3 shadow-sm">
                 <h5>Total Readings</h5>
-                <p>@Model.Count</p>
+                <p>@ViewBag.TotalCount</p>
             </div>
         </div>
 
@@ -50,32 +50,86 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const data = @Html.Raw(Json.Serialize(Model));
+    let chart;
+    let lastTimestamp = null;
 
-    const labels = data.map(x => new Date(x.timestamp).toLocaleTimeString());
-    const values = data.map(x => x.value);
+    function createChart() {
+    const ctx = document.getElementById('chart').getContext('2d');
+
+    chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+    labels: [],
+    datasets: [{
+    label: 'Instrument Data',
+    data: [],
+    borderWidth: 2
+    }]
+    },
+    options: {
+    responsive: true,
+    scales: {
+    y: { min: 0, max: 100 }
+    }
+    }
+    });
+    }
+
+    // initial load: fill with latest 50
+    async function loadInitial() {
+        const instrumentId = document.getElementById("instrumentSelect")?.value || 1;
+
+        const res = await fetch(`/api/readings/latest?instrumentId=${instrumentId}`);
+        const data = await res.json();
+
+        const labels = data.map(x => new Date(x.timestamp).toLocaleTimeString());
+        const values = data.map(x => x.value);
+
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
+        chart.update();
+
+        if (data.length > 0) {
+            lastTimestamp = data[data.length - 1].timestamp;
+        }
+    }
+
+    // update: only append NEW points
+    async function updateChart() {
+        const instrumentId = document.getElementById("instrumentSelect")?.value || 1;
+
+        const res = await fetch(`/api/readings/latest?instrumentId=${instrumentId}`);
+        const data = await res.json();
+
+        if (!data || data.length === 0) return;
+
+            const latest = data[data.length - 1];
+
+        if (lastTimestamp !== latest.timestamp) {
+            const label = new Date(latest.timestamp).toLocaleTimeString();
+            const value = latest.value;
+
+            chart.data.labels.push(label);
+            chart.data.datasets[0].data.push(value);
+
+            if (chart.data.labels.length > 50) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+
+            chart.update();
+            lastTimestamp = latest.timestamp;
+        }
+    }
+
+    window.onload = function () {
+    createChart();
+    loadInitial();
+
+    setInterval(updateChart, 2000);
 
     document.getElementById("instrumentSelect").addEventListener("change", function () {
-    const selectedId = this.value;
-    window.location.href = "/?instrumentId=" + selectedId;
+        location.reload();
     });
-
-    // Latest value
-    document.getElementById("latest").innerText =
-    values.length ? values[values.length - 1].toFixed(2) : "No data";
-
-    new Chart(document.getElementById('chart'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Instrument Data',
-                data: values
-            }]
-        }
-    });
-
-    // auto refresh
-    setTimeout(() => location.reload(), 5000);
-
+};
 </script>

@@ -23,6 +23,9 @@ public class HomeController : Controller
         ViewBag.Instruments = _context.Instruments.ToList();
         ViewBag.SelectedInstrumentId = instrumentId;
 
+        ViewBag.TotalCount = _context.Readings
+            .Count(r => r.InstrumentId == instrumentId);
+
         return View(readings);
     }
 }

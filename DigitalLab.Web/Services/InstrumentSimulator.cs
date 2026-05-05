@@ -25,15 +25,40 @@ namespace DigitalLab.Web.Services
                 if (!instruments.Any())
                     continue;
 
-                var reading = new Reading
+                foreach (var instrumentId in instruments)
                 {
-                    InstrumentId = instruments[_random.Next(instruments.Count)],
-                    Value = _random.NextDouble() * 100,
-                    Unit = "kWh",
-                    Timestamp = DateTime.UtcNow
-                };
+                    double value;
 
-                db.Readings.Add(reading);
+                    switch (instrumentId)
+                    {
+                        case 1: // Main Meter (stable)
+                            value = 50 + _random.NextDouble() * 5;
+                            break;
+
+                        case 2: // Backup Meter (slightly higher variance)
+                            value = 60 + _random.NextDouble() * 15;
+                            break;
+
+                        case 3: // Test Sensor (noisy / spiky)
+                            value = _random.NextDouble() * 100;
+                            break;
+
+                        default:
+                            value = _random.NextDouble() * 100;
+                            break;
+                    }
+
+                    var reading = new Reading
+                    {
+                        InstrumentId = instrumentId,
+                        Value = value,
+                        Unit = "kWh",
+                        Timestamp = DateTime.UtcNow
+                    };
+
+                    db.Readings.Add(reading);
+                }
+
                 await db.SaveChangesAsync();
 
                 await Task.Delay(2000, stoppingToken);
